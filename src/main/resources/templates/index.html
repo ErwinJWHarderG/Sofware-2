@@ -8,29 +8,34 @@
 <body>
 <header class="encabezado">
     <h1>Sistema de Biblioteca Universitaria</h1>
-    <p>Acceso al sistema según el rol del usuario.</p>
+    <p>Ingreso al sistema mediante número de identificación.</p>
 </header>
 
 <main class="contenedor">
+    <div class="mensaje error" th:if="${mensajeError}" th:text="${mensajeError}"></div>
+    <div class="mensaje exito" th:if="${mensajeExito}" th:text="${mensajeExito}"></div>
+
     <section class="tarjeta principal">
         <h2 th:text="${biblioteca.nombre}">Biblioteca Universitaria</h2>
         <p><strong>Dirección:</strong> <span th:text="${biblioteca.direccion}"></span></p>
         <p><strong>Teléfono:</strong> <span th:text="${biblioteca.telefono}"></span></p>
-        <p><strong>Horario:</strong> <span th:text="${biblioteca.horarioAtencion}"></span></p>
     </section>
 
     <section class="tarjeta">
-        <h2>Selecciona tu tipo de acceso</h2>
-        <p>
-            El sistema cuenta con dos roles principales: bibliotecario y usuario de biblioteca.
-            El bibliotecario gestiona préstamos y libros. El usuario puede consultar el catálogo
-            y solicitar préstamos.
-        </p>
+        <h2>Ingresar al sistema</h2>
+        <p>Ingrese su número de identificación para acceder al panel según su perfil:</p>
 
-        <div class="acciones">
-            <a class="boton" th:href="@{/bibliotecario}">Ingresar como bibliotecario</a>
-            <a class="boton secundario" th:href="@{/usuario/login}">Ingresar como usuario</a>
-        </div>
+        <form th:action="@{/login}" method="post" class="formulario">
+            <label for="identificacion">Número de identificación</label>
+            <input id="identificacion" name="identificacion" type="text" placeholder="Ejemplo: 2001 o 1001" required autofocus>
+            <button type="submit" class="boton">Ingresar</button>
+        </form>
+    </section>
+
+    <section class="tarjeta">
+        <h2>IDs de demostración</h2>
+        <p><strong>Bibliotecarios:</strong> <code>2001</code> (Marta López) | <code>2002</code> (Pedro Ramírez)</p>
+        <p><strong>Usuarios:</strong> <code>1001</code> (Juan Pérez) | <code>1002</code> (Ana Gómez) | <code>1003</code> (Carlos Ruiz)</p>
     </section>
 </main>
 </body>

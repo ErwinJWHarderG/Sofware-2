@@ -1,0 +1,33 @@
+services:
+  # Base de Datos MariaDB
+  biblioteca_mariadb:
+    image: mariadb:latest
+    container_name: biblioteca_mariadb
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: biblioteca_db
+      MYSQL_USER: usuario_sistema
+      MYSQL_PASSWORD: '1234'
+    ports:
+      - "3307:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./init_db.sql:/docker-entrypoint-initdb.d/001-init-db.sql
+
+  # Aplicación Web Spring Boot
+  biblioteca_web:
+    build: .
+    container_name: biblioteca_web
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mariadb://biblioteca_mariadb:3306/biblioteca_db
+      SPRING_DATASOURCE_USERNAME: usuario_sistema
+      SPRING_DATASOURCE_PASSWORD: '1234'
+    depends_on:
+      - biblioteca_mariadb
+
+volumes:
+  mariadb_data:

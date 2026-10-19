@@ -4,15 +4,15 @@ import co.edu.biblioteca.dto.PrestamoForm;
 import co.edu.biblioteca.service.BibliotecaService;
 import co.edu.biblioteca.service.LibroService;
 import co.edu.biblioteca.service.PrestamoService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.springframework.web.bind.annotation.PathVariable;
 
 @Controller
 @RequestMapping("/prestamos")
@@ -29,7 +29,11 @@ public class PrestamoController {
     }
 
     @GetMapping
-    public String mostrarFormulario(Model model) {
+    public String mostrarFormulario(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!"BIBLIOTECARIO".equals(session.getAttribute("rol"))) {
+            redirectAttributes.addFlashAttribute("mensajeError", "Acceso denegado. Debe ingresar como Bibliotecario.");
+            return "redirect:/";
+        }
         model.addAttribute("prestamoForm", new PrestamoForm());
         model.addAttribute("usuarios", bibliotecaService.getBiblioteca().getUsuarios());
         model.addAttribute("bibliotecarios", bibliotecaService.getBiblioteca().getBibliotecarios());
@@ -39,15 +43,24 @@ public class PrestamoController {
     }
 
     @PostMapping("/{id}/devolver")
-    public String registrarDevolucion(@PathVariable int id, RedirectAttributes redirectAttributes) {
+    public String registrarDevolucion(@PathVariable int id, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!"BIBLIOTECARIO".equals(session.getAttribute("rol"))) {
+            return "redirect:/";
+        }
         String mensaje = prestamoService.registrarDevolucion(id);
-        if (mensaje.startsWith("Devolución registrada correctamente")) redirectAttributes.addFlashAttribute("mensajeExito", mensaje);
-        else redirectAttributes.addFlashAttribute("mensajeError", mensaje);
+        if (mensaje.startsWith("Devolución registrada correctamente")) {
+            redirectAttributes.addFlashAttribute("mensajeExito", mensaje);
+        } else {
+            redirectAttributes.addFlashAttribute("mensajeError", mensaje);
+        }
         return "redirect:/prestamos";
     }
 
     @PostMapping("/registrar")
-    public String registrarPrestamo(@ModelAttribute PrestamoForm prestamoForm, RedirectAttributes redirectAttributes) {
+    public String registrarPrestamo(@ModelAttribute PrestamoForm prestamoForm, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!"BIBLIOTECARIO".equals(session.getAttribute("rol"))) {
+            return "redirect:/";
+        }
         String mensaje = prestamoService.registrarPrestamo(prestamoForm);
 
         if (mensaje.startsWith("Préstamo registrado correctamente")) {

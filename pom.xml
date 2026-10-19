@@ -15,7 +15,7 @@
     <artifactId>biblioteca-universitaria-web</artifactId>
     <version>1.0.0</version>
     <name>Biblioteca Universitaria Web</name>
-    <description>MVP para registrar prestamos de libros en una biblioteca universitaria</description>
+    <description>Sistema de gestión de biblioteca universitaria</description>
 
     <properties>
         <java.version>17</java.version>
@@ -30,6 +30,14 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
+
+        <!-- Driver de MariaDB -->
+        <dependency>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
