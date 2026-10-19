@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Formulario de libro</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+</head>
+<body>
+<header class="encabezado">
+    <h1 th:text="${modo == 'crear' ? 'Crear libro' : 'Editar libro'}">Formulario de libro</h1>
+    <p>Formulario para crear o actualizar libros del catálogo.</p>
+</header>
+
+<nav class="menu">
+    <a th:href="@{/}">Cerrar sesión</a>
+    <a th:href="@{/bibliotecario}">Panel bibliotecario</a>
+    <a th:href="@{/prestamos}">Registrar préstamo</a>
+    <a th:href="@{/libros}">Gestionar libros</a>
+</nav>
+
+<main class="contenedor">
+    <section class="tarjeta">
+        <form th:action="@{/libros/guardar}" th:object="${libro}" method="post" class="formulario">
+            <label for="isbn">ISBN</label>
+            <input id="isbn" type="text" th:field="*{isbn}" th:readonly="${modo == 'editar'}" required>
+
+            <label for="titulo">Título</label>
+            <input id="titulo" type="text" th:field="*{titulo}" required>
+
+            <label for="autor">Autor</label>
+            <input id="autor" type="text" th:field="*{autor}" required>
+
+            <label for="editorial">Editorial</label>
+            <input id="editorial" type="text" th:field="*{editorial}" required>
+
+            <label for="anioPublicacion">Año de publicación</label>
+            <input id="anioPublicacion" type="number" th:field="*{anioPublicacion}" min="1900" max="2030" required>
+
+            <label for="categoria">Categoría</label>
+            <input id="categoria" type="text" th:field="*{categoria}" required>
+
+            <div class="acciones">
+                <button type="submit" class="boton">Guardar</button>
+                <a class="boton secundario" th:href="@{/libros}">Cancelar</a>
+            </div>
+        </form>
+    </section>
+</main>
+</body>
+</html>

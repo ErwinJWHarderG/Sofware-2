@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Usuarios registrados</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+</head>
+<body>
+<header class="encabezado">
+    <h1>Usuarios registrados</h1>
+    <p>Listado de estudiantes y docentes registrados en el sistema.</p>
+</header>
+
+<nav class="menu">
+    <a th:href="@{/}">Cerrar sesión</a>
+    <a th:href="@{/bibliotecario}">Panel bibliotecario</a>
+    <a th:href="@{/prestamos}">Registrar préstamo</a>
+    <a th:href="@{/libros}">Gestionar libros</a>
+</nav>
+
+<main class="contenedor">
+    <div class="mensaje exito" th:if="${mensajeExito}" th:text="${mensajeExito}"></div>
+    <div class="mensaje error" th:if="${mensajeError}" th:text="${mensajeError}"></div>
+
+    <section class="tarjeta principal">
+        <h2>Gestión de usuarios</h2>
+        <p>
+            En esta sección el bibliotecario puede consultar los usuarios registrados
+            en la biblioteca universitaria. Estos usuarios pueden ser estudiantes o docentes.
+        </p>
+    </section>
+
+    <section class="tarjeta">
+        <h2>Lista de usuarios del sistema</h2>
+
+        <table>
+            <thead>
+            <tr>
+                <th>Identificación</th>
+                <th>Nombre completo</th>
+                <th>Correo</th>
+                <th>Tipo de usuario</th>
+                <th>Estado</th>
+                <th>Actualizar datos</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr th:each="usuario : ${usuarios}">
+                <td th:text="${usuario.identificacion}">1001</td>
+                <td th:text="${usuario.nombreCompleto}">Juan Pérez</td>
+                <td th:text="${usuario.correo}">correo@uq.edu.co</td>
+                <td th:text="${usuario.tipoUsuario}">ESTUDIANTE</td>
+
+                <td>
+                    <span th:if="${usuario.estado.name() == 'ACTIVO'}"
+                          class="estado activo"
+                          th:text="${usuario.estado}">
+                        ACTIVO
+                    </span>
+
+                    <span th:if="${usuario.estado.name() == 'INACTIVO'}"
+                          class="estado inactivo"
+                          th:text="${usuario.estado}">
+                        INACTIVO
+                    </span>
+                </td>
+                <td>
+                    <form th:action="@{/bibliotecario/usuarios/actualizar}" method="post" class="formulario">
+                        <input type="hidden" name="identificacion" th:value="${usuario.identificacion}">
+                        <label>Nombre</label><input name="nombre" th:value="${usuario.nombre}" required>
+                        <label>Apellido</label><input name="apellido" th:value="${usuario.apellido}" required>
+                        <label>Correo</label><input name="correo" type="email" th:value="${usuario.correo}" required>
+                        <label>Estado</label><select name="estado"><option value="ACTIVO" th:selected="${usuario.estado.name() == 'ACTIVO'}">ACTIVO</option><option value="INACTIVO" th:selected="${usuario.estado.name() == 'INACTIVO'}">INACTIVO</option></select>
+                        <button type="submit" class="boton pequeno">Guardar cambios</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+</main>
+</body>
+</html>

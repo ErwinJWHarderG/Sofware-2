@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Acceso Biblioteca Universitaria</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+</head>
+<body>
+<header class="encabezado">
+    <h1>Sistema de Biblioteca Universitaria</h1>
+    <p>Acceso al sistema según el rol del usuario.</p>
+</header>
+
+<main class="contenedor">
+    <section class="tarjeta principal">
+        <h2 th:text="${biblioteca.nombre}">Biblioteca Universitaria</h2>
+        <p><strong>Dirección:</strong> <span th:text="${biblioteca.direccion}"></span></p>
+        <p><strong>Teléfono:</strong> <span th:text="${biblioteca.telefono}"></span></p>
+        <p><strong>Horario:</strong> <span th:text="${biblioteca.horarioAtencion}"></span></p>
+    </section>
+
+    <section class="tarjeta">
+        <h2>Selecciona tu tipo de acceso</h2>
+        <p>
+            El sistema cuenta con dos roles principales: bibliotecario y usuario de biblioteca.
+            El bibliotecario gestiona préstamos y libros. El usuario puede consultar el catálogo
+            y solicitar préstamos.
+        </p>
+
+        <div class="acciones">
+            <a class="boton" th:href="@{/bibliotecario}">Ingresar como bibliotecario</a>
+            <a class="boton secundario" th:href="@{/usuario/login}">Ingresar como usuario</a>
+        </div>
+    </section>
+</main>
+</body>
+</html>

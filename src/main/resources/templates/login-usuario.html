@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Ingreso de usuario</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+</head>
+<body>
+<header class="encabezado">
+    <h1>Ingreso de usuario</h1>
+    <p>Consulta el catálogo y solicita préstamos usando tu identificación.</p>
+</header>
+
+<nav class="menu">
+    <a th:href="@{/}">Inicio</a>
+</nav>
+
+<main class="contenedor">
+    <div class="mensaje error" th:if="${mensajeError}" th:text="${mensajeError}"></div>
+
+    <section class="tarjeta">
+        <h2>Identificación del usuario</h2>
+
+        <form th:action="@{/usuario/login}" method="post" class="formulario">
+            <label for="identificacion">Número de identificación</label>
+            <input id="identificacion"
+                   name="identificacion"
+                   type="text"
+                   placeholder="Ejemplo: 1001"
+                   required>
+
+            <button type="submit" class="boton">Ingresar</button>
+        </form>
+    </section>
+
+    <section class="tarjeta">
+        <h2>Usuarios demo para probar</h2>
+        <p><strong>1001</strong> - Juan Pérez - Estudiante activo</p>
+        <p><strong>1002</strong> - Ana Gómez - Estudiante activo</p>
+        <p><strong>1003</strong> - Carlos Ruiz - Docente activo</p>
+        <p><strong>1004</strong> - Laura Martínez - Usuario inactivo</p>
+        <p><strong>1005</strong> - Mateo López - Usuario con multa pendiente</p>
+    </section>
+</main>
+</body>
+</html>
