@@ -1,13 +1,14 @@
+
 package co.edu.biblioteca.service;
 
 import co.edu.biblioteca.dto.PrestamoForm;
 import co.edu.biblioteca.enums.EstadoPrestamo;
 import co.edu.biblioteca.enums.EstadoUsuario;
-import co.edu.biblioteca.enums.EstadoEjemplar;
 import co.edu.biblioteca.model.*;
 import org.springframework.stereotype.Service;
-import java.util.ArrayList;
+
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -19,7 +20,10 @@ public class PrestamoService {
     private final BibliotecaService bibliotecaService;
     private final LibroService libroService;
 
-    public PrestamoService(BibliotecaService bibliotecaService, LibroService libroService) {
+    public PrestamoService(
+            BibliotecaService bibliotecaService,
+            LibroService libroService
+    ) {
         this.bibliotecaService = bibliotecaService;
         this.libroService = libroService;
     }
@@ -30,7 +34,8 @@ public class PrestamoService {
 
     public String registrarPrestamo(PrestamoForm form) {
         Usuario usuario = buscarUsuario(form.getIdentificacionUsuario());
-        Bibliotecario bibliotecario = buscarBibliotecario(form.getIdentificacionBibliotecario());
+        Bibliotecario bibliotecario =
+                buscarBibliotecario(form.getIdentificacionBibliotecario());
         Libro libro = libroService.buscarPorIsbn(form.getIsbnLibro());
 
         if (usuario == null) {
@@ -45,24 +50,19 @@ public class PrestamoService {
             return "No se encontró el libro seleccionado.";
         }
 
-        if (usuario.getEstado() != EstadoUsuario.ACTIVO) {
-            return "No se puede registrar el préstamo porque el usuario está inactivo.";
-        }
-
-        if (usuarioTieneMultasPendientes(usuario)) {
-            return "No se puede registrar el préstamo porque el usuario tiene multas pendientes.";
-        }
-
-        if (contarPrestamosActivos(usuario) >= MAXIMO_PRESTAMOS_ACTIVOS) {
-            return "No se puede registrar el préstamo porque el usuario alcanzó el máximo de préstamos activos.";
+        String errorValidacion = validarCondicionesUsuario(usuario, false);
+        if (errorValidacion != null) {
+            return errorValidacion;
         }
 
         Ejemplar ejemplarDisponible = libro.buscarPrimerEjemplarDisponible();
+
         if (ejemplarDisponible == null) {
             return "No se puede registrar el préstamo porque no hay ejemplares disponibles del libro seleccionado.";
         }
 
         int nuevoId = listarPrestamos().size() + 1;
+
         Prestamo prestamo = new Prestamo(
                 nuevoId,
                 LocalDate.now(),
@@ -78,30 +78,52 @@ public class PrestamoService {
         ejemplarDisponible.marcarPrestado();
         listarPrestamos().add(prestamo);
 
-        return "Préstamo registrado correctamente. Usuario: " + usuario.getNombreCompleto()
+        return "Préstamo registrado correctamente. Usuario: "
+                + usuario.getNombreCompleto()
                 + ". Ejemplar: " + ejemplarDisponible.getCodigoEjemplar()
                 + ". Fecha: " + prestamo.getFechaPrestamo()
                 + ". Fecha de devolución: " + prestamo.getFechaDevolucion()
                 + ". Estado: ACTIVO.";
     }
 
-
     public String registrarDevolucion(int idPrestamo) {
         Prestamo prestamo = null;
+
         for (Prestamo p : listarPrestamos()) {
-            if (p.getIdPrestamo() == idPrestamo) { prestamo = p; break; }
+            if (p.getIdPrestamo() == idPrestamo) {
+                prestamo = p;
+                break;
+            }
         }
-        if (prestamo == null) return "No se encontró el préstamo seleccionado.";
-        if (!prestamo.estaActivo()) return "Este préstamo ya fue devuelto o no está activo.";
+
+        if (prestamo == null) {
+            return "No se encontró el préstamo seleccionado.";
+        }
+
+        if (!prestamo.estaActivo()) {
+            return "Este préstamo ya fue devuelto o no está activo.";
+        }
+
         prestamo.setEstado(EstadoPrestamo.DEVUELTO);
-        if (prestamo.getEjemplar() != null) prestamo.getEjemplar().marcarDevuelto();
-        return "Devolución registrada correctamente. Usuario: " + prestamo.getUsuario().getNombreCompleto()
+
+        if (prestamo.getEjemplar() != null) {
+            prestamo.getEjemplar().marcarDevuelto();
+        }
+
+        return "Devolución registrada correctamente. Usuario: "
+                + prestamo.getUsuario().getNombreCompleto()
                 + ". Ejemplar: " + prestamo.getEjemplar().getCodigoEjemplar()
-                + ". Fecha: " + LocalDate.now() + ". Estado: DEVUELTO.";
+                + ". Fecha: " + LocalDate.now()
+                + ". Estado: DEVUELTO.";
     }
 
     public Prestamo buscarPrestamo(int idPrestamo) {
-        for (Prestamo p : listarPrestamos()) if (p.getIdPrestamo() == idPrestamo) return p;
+        for (Prestamo p : listarPrestamos()) {
+            if (p.getIdPrestamo() == idPrestamo) {
+                return p;
+            }
+        }
+
         return null;
     }
 
@@ -111,41 +133,53 @@ public class PrestamoService {
                 return usuario;
             }
         }
+
         return null;
     }
 
     public Bibliotecario buscarBibliotecario(String identificacion) {
-        for (Bibliotecario bibliotecario : bibliotecaService.getBiblioteca().getBibliotecarios()) {
+        for (Bibliotecario bibliotecario
+                : bibliotecaService.getBiblioteca().getBibliotecarios()) {
             if (bibliotecario.getIdentificacion().equals(identificacion)) {
                 return bibliotecario;
             }
         }
+
         return null;
     }
 
     public int contarPrestamosActivos(Usuario usuario) {
         int contador = 0;
+
         for (Prestamo prestamo : listarPrestamos()) {
-            if (prestamo.getUsuario().getIdentificacion().equals(usuario.getIdentificacion()) && prestamo.estaActivo()) {
+            if (prestamo.getUsuario().getIdentificacion()
+                    .equals(usuario.getIdentificacion())
+                    && prestamo.estaActivo()) {
                 contador++;
             }
         }
+
         return contador;
     }
 
     public boolean usuarioTieneMultasPendientes(Usuario usuario) {
         for (Multa multa : bibliotecaService.getBiblioteca().getMultas()) {
-            if (multa.getUsuario().getIdentificacion().equals(usuario.getIdentificacion()) && multa.estaPendiente()) {
+            if (multa.getUsuario().getIdentificacion()
+                    .equals(usuario.getIdentificacion())
+                    && multa.estaPendiente()) {
                 return true;
             }
         }
+
         return false;
     }
+
     public List<Prestamo> listarPrestamosPorUsuario(Usuario usuario) {
         List<Prestamo> prestamosUsuario = new ArrayList<>();
 
         for (Prestamo prestamo : listarPrestamos()) {
-            if (prestamo.getUsuario().getIdentificacion().equals(usuario.getIdentificacion())) {
+            if (prestamo.getUsuario().getIdentificacion()
+                    .equals(usuario.getIdentificacion())) {
                 prestamosUsuario.add(prestamo);
             }
         }
@@ -153,7 +187,10 @@ public class PrestamoService {
         return prestamosUsuario;
     }
 
-    public String solicitarPrestamoComoUsuario(String identificacionUsuario, String isbnLibro) {
+    public String solicitarPrestamoComoUsuario(
+            String identificacionUsuario,
+            String isbnLibro
+    ) {
         Usuario usuario = buscarUsuario(identificacionUsuario);
         Libro libro = libroService.buscarPorIsbn(isbnLibro);
 
@@ -165,16 +202,9 @@ public class PrestamoService {
             return "No se encontró el libro solicitado.";
         }
 
-        if (usuario.getEstado() != EstadoUsuario.ACTIVO) {
-            return "No puedes solicitar préstamos porque tu usuario está inactivo.";
-        }
-
-        if (usuarioTieneMultasPendientes(usuario)) {
-            return "No puedes solicitar este préstamo porque tienes multas pendientes.";
-        }
-
-        if (contarPrestamosActivos(usuario) >= MAXIMO_PRESTAMOS_ACTIVOS) {
-            return "No puedes solicitar este préstamo porque alcanzaste el máximo de préstamos activos.";
+        String errorValidacion = validarCondicionesUsuario(usuario, true);
+        if (errorValidacion != null) {
+            return errorValidacion;
         }
 
         Ejemplar ejemplarDisponible = libro.buscarPrimerEjemplarDisponible();
@@ -206,11 +236,45 @@ public class PrestamoService {
         ejemplarDisponible.marcarPrestado();
         listarPrestamos().add(prestamo);
 
-        return "Préstamo solicitado correctamente. Usuario: " + usuario.getNombreCompleto()
+        return "Préstamo solicitado correctamente. Usuario: "
+                + usuario.getNombreCompleto()
                 + ". Ejemplar: " + ejemplarDisponible.getCodigoEjemplar()
                 + ". Fecha: " + prestamo.getFechaPrestamo()
                 + ". Fecha de devolución: " + prestamo.getFechaDevolucion()
                 + ". Estado: ACTIVO.";
+    }
+
+    /**
+     * Centraliza las reglas compartidas por el registro de préstamos del
+     * bibliotecario y la solicitud iniciada desde el catálogo del usuario.
+     *
+     * @param usuario usuario cuyas condiciones se van a validar
+     * @param solicitudUsuario indica si la operación proviene del catálogo
+     * @return mensaje de error cuando una regla no se cumple; null si pasa
+     */
+    private String validarCondicionesUsuario(
+            Usuario usuario,
+            boolean solicitudUsuario
+    ) {
+        if (usuario.getEstado() != EstadoUsuario.ACTIVO) {
+            return solicitudUsuario
+                    ? "No puedes solicitar préstamos porque tu usuario está inactivo."
+                    : "No se puede registrar el préstamo porque el usuario está inactivo.";
+        }
+
+        if (usuarioTieneMultasPendientes(usuario)) {
+            return solicitudUsuario
+                    ? "No puedes solicitar este préstamo porque tienes multas pendientes."
+                    : "No se puede registrar el préstamo porque el usuario tiene multas pendientes.";
+        }
+
+        if (contarPrestamosActivos(usuario) >= MAXIMO_PRESTAMOS_ACTIVOS) {
+            return solicitudUsuario
+                    ? "No puedes solicitar este préstamo porque alcanzaste el máximo de préstamos activos."
+                    : "No se puede registrar el préstamo porque el usuario alcanzó el máximo de préstamos activos.";
+        }
+
+        return null;
     }
 
     private Bibliotecario obtenerBibliotecarioPorDefecto() {
